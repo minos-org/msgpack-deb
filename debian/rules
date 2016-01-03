@@ -1,0 +1,26 @@
+#!/usr/bin/make -f
+
+DEB_VERSION:=$(shell dpkg-parsechangelog -n1 | sed -n '/^Version: /s///p')
+DEB_UPSTREAM_VERSION:=$(shell DEB_VERSION=${DEB_VERSION}; echo $${DEB_VERSION%-*})
+DEB_UPSTREAM_VERSION:=$(shell DEB_UPSTREAM_VERSION=${DEB_UPSTREAM_VERSION}; echo $${DEB_UPSTREAM_VERSION\#*:})
+DEB_MASTER_VERSION:=$(shell DEB_UPSTREAM_VERSION=${DEB_UPSTREAM_VERSION}; echo $${DEB_UPSTREAM_VERSION\#*+git})
+
+# Uncomment this to turn on verbose mode.
+export DH_VERBOSE=1
+
+%:
+	dh $@ --parallel --buildsystem=cmake
+
+override_dh_auto_configure:
+	./debian/remove-clang-options.sh
+	dh_auto_configure
+
+get-orig-source:
+	rm -rf debian/tmp; mkdir debian/tmp
+	cd debian/tmp; wget https://github.com/msgpack/msgpack-c/archive/${DEB_MASTER_VERSION}.tar.gz
+	cd debian/tmp; tar xvzf ${DEB_MASTER_VERSION}.tar.gz
+	cd debian/tmp; mv msgpack-* msgpack-${DEB_UPSTREAM_VERSION}
+	cd debian/tmp; tar cvJf msgpack_${DEB_UPSTREAM_VERSION}.orig.tar.xz msgpack-${DEB_UPSTREAM_VERSION}
+	mv debian/tmp/msgpack_${DEB_UPSTREAM_VERSION}.orig.tar.xz .
+	mv debian/tmp/msgpack-${DEB_UPSTREAM_VERSION} .
+	rm -rf debian/tmp
