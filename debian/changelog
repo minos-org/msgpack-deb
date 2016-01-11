@@ -1,4 +1,4 @@
-msgpack (1:201601022219+git953077b-minos) precise; urgency=medium
+msgpack (1.3.0+git953077b) precise; urgency=medium
 
   * Remove clang options
   * Fix lintian errors, dpkg-dev dependency, multiarch pre-depends
